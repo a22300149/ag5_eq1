@@ -64,7 +64,7 @@ class _MqttGuiState extends State<MqttGui> {
               subscribe(topicController.text);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
+              backgroundColor: Colors.deepPurple,
             ),
             child: Text("Suscribir", style: TextStyle(color: Colors.white)),
           ),
@@ -116,7 +116,7 @@ class _MqttGuiState extends State<MqttGui> {
               publish(topicController.text, valueController.text);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
+              backgroundColor: Colors.deepPurple,
             ),
             child: Text("Enviar datos", style: TextStyle(color: Colors.white)),
           ),
