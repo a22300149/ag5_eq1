@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart'; // <- Agrega este package a tu pubspec.yaml
 import 'mqtt_stream.dart';
 import 'Adafruit_feed.dart';
 
@@ -11,7 +11,7 @@ class MqttGui extends StatefulWidget {
 class _MqttGuiState extends State<MqttGui> {
   AppMqttTransactions myMQTT = AppMqttTransactions();
   final topicController = TextEditingController();
-  final valueController = TextEditingController();
+  Color currentColor = Colors.blue;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class _MqttGuiState extends State<MqttGui> {
         SizedBox(height: 20.0,),
         _viewData(),
         SizedBox(height: 20.0,),
-        _publishData(),
+        _colorPickerWidget(),
       ],
     );
   }
@@ -49,9 +49,7 @@ class _MqttGuiState extends State<MqttGui> {
               Flexible(child: TextField(
                 controller: topicController,
                 decoration: InputDecoration(
-                    border: OutlineInputBorder(
-
-                    )
+                  border: OutlineInputBorder(),
                 ),
               ))
             ],
@@ -71,7 +69,7 @@ class _MqttGuiState extends State<MqttGui> {
           SizedBox(
             height: 20.0,
           ),
-          Text("Valor recibido de el Feed (sensor, etc.)")
+          Text("Valor recibido del Feed (sensor, etc.)")
         ],
       ),
     );
@@ -83,47 +81,56 @@ class _MqttGuiState extends State<MqttGui> {
         builder: (context, snapshot) {
           String? reading = snapshot.data;
           if (reading == null) {
-            reading = "Nohay un valor definido";
+            reading = "No hay un valor definido";
           }
           return Text(reading);
         });
   }
 
-  Widget _publishData() {
+  Widget _colorPickerWidget() {
     return Container(
       margin: EdgeInsets.fromLTRB(20, 50, 20, 20),
       child: Column(
         children: [
-          Row(
-              children: [
-                Text(
-                  "Value:",
-                  style: TextStyle(fontSize: 20.0, color: Colors.white),
-                ),
-                Flexible(
-                    child: TextField(
-                      controller: valueController,
-                      decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: "Valor para publicar"
-                      ),
-                    ))
-              ]
+          Text(
+            "Selecciona un color para el LED",
+            style: TextStyle(fontSize: 18, color: Colors.grey[700]),
           ),
-          SizedBox(height: 20,),
+          SizedBox(height: 20),
+          ColorPicker(
+            pickerColor: currentColor,
+            onColorChanged: (Color color) {
+              setState(() {
+                currentColor = color;
+              });
+            },
+            showLabel: true,
+            pickerAreaHeightPercent: 0.6,
+          ),
+          SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              publish(topicController.text, valueController.text);
+              sendColorToMqtt();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
+              backgroundColor: currentColor,
             ),
-            child: Text("Enviar datos", style: TextStyle(color: Colors.white)),
+            child: Text("Enviar Color", style: TextStyle(color: Colors.white)),
           ),
-          SizedBox(height: 20,),
         ],
       ),
     );
+  }
+
+  void sendColorToMqtt() {
+    if (topicController.text.isEmpty) return;
+
+    int r = currentColor.red;
+    int g = currentColor.green;
+    int b = currentColor.blue;
+
+    String rgbString = "$r,$g,$b"; // Enviamos como "255,100,50"
+    publish(topicController.text, rgbString);
   }
 
   void subscribe(String feed) {
