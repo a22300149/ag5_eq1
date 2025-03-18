@@ -71,7 +71,7 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
               barRods: [
                 BarChartRodData(
                   toY: double.tryParse(temperature) ?? 0.0,  // Convertir la temperatura a double
-                  color: Colors.blue,
+                  color: Colors.lightGreen,
                 ),
               ],
             ));
@@ -90,7 +90,7 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
               barRods: [
                 BarChartRodData(
                   toY: double.tryParse(humidity) ?? 0.0,  // Convertir la humedad a double
-                  color: Colors.green,  // Diferente color para la humedad
+                  color: Colors.blueAccent,  // Diferente color para la humedad
                 ),
               ],
             ));
@@ -147,7 +147,7 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
                 Card(
                   elevation: 5,
                   child: ListTile(
-                    leading: Icon(Icons.thermostat_outlined, color: Colors.blue, size: 40),  // Icono de temperatura
+                    leading: Icon(Icons.thermostat_outlined, color: Colors.lightGreen, size: 40),  // Icono de temperatura
                     title: Text(
                       'Temperatura actual:',
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -156,7 +156,7 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
                         temperature, // Mostrar la temperatura
-                        style: TextStyle(fontSize: 32, color: Colors.blue),
+                        style: TextStyle(fontSize: 32, color: Colors.lightGreen),
                       ),
                     ),
                     onTap: () {
@@ -180,7 +180,7 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
                 Card(
                   elevation: 5,
                   child: ListTile(
-                    leading: Icon(Icons.water_drop_outlined, color: Colors.green, size: 40),  // Icono de humedad
+                    leading: Icon(Icons.water_drop_outlined, color: Colors.blueAccent, size: 40),  // Icono de humedad
                     title: Text(
                       'Humedad actual:',
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -189,7 +189,7 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
                         humidity, // Mostrar la humedad
-                        style: TextStyle(fontSize: 32, color: Colors.green),
+                        style: TextStyle(fontSize: 32, color: Colors.blueAccent),
                       ),
                     ),
                     onTap: () {
