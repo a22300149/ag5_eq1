@@ -212,7 +212,7 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
                 // Botón para actualizar la temperatura y humedad
                 ElevatedButton(
                   onPressed: fetchData, // Actualizar los datos al presionar el botón
-                  child: Text('Actualizar Datos'),
+                  child: Text('Actualizar datos'),
                 ),
               ],
             ),
