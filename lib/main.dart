@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:fl_chart/fl_chart.dart';  // Importar fl_chart
+import 'package:fl_chart/fl_chart.dart';
 
 void main() {
   runApp(MyApp());
@@ -28,31 +28,27 @@ class TemperatureScreen extends StatefulWidget {
 }
 
 class _TemperatureScreenState extends State<TemperatureScreen> {
-  String temperature = "Cargando..."; // Valor inicial de la temperatura
-  String humidity = "Cargando..."; // Valor inicial de la humedad
-  List<BarChartGroupData> temperatureData = [];  // Lista para los datos de la temperatura
-  List<BarChartGroupData> humidityData = [];     // Lista para los datos de la humedad
-  Timer? _timer; // Instancia de Timer
+  String temperature = "Cargando...";
+  String humidity = "Cargando...";
+  List<BarChartGroupData> temperatureData = [];
+  List<BarChartGroupData> humidityData = [];
+  Timer? _timer;
 
-  // Función para obtener la temperatura y la humedad desde Adafruit IO
   Future<void> fetchData() async {
-    final String username = "DanielCr24"; // Tu nombre de usuario
-    final String key = "aio_iQuj072waO7acE9ymKFADOxRU4W0"; // Tu clave de Adafruit IO
+    final String username = "DanielCr24";
+    final String key = "aio_iQuj072waO7acE9ymKFADOxRU4W0";
 
-    // URLs para obtener los datos del feed de temperatura y humedad
     final urlTemperature = Uri.https(
       'io.adafruit.com',
       '/api/v2/$username/feeds/temperature/data/last',
-      {'X-AIO-Key': key}, // Encabezado con la clave de acceso
+      {'X-AIO-Key': key},
     );
 
     final urlHumidity = Uri.https(
       'io.adafruit.com',
       '/api/v2/$username/feeds/humidity/data/last',
-      {'X-AIO-Key': key}, // Encabezado con la clave de acceso
+      {'X-AIO-Key': key},
     );
-
-    print("Intentando obtener datos desde: $urlTemperature y $urlHumidity");
 
     try {
       final responseTemperature = await http.get(urlTemperature);
@@ -64,45 +60,43 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
 
         if (dataTemperature != null && dataTemperature['value'] != null) {
           setState(() {
-            temperature = dataTemperature['value']; // Extraer la temperatura
-            // Agregar la nueva lectura de temperatura al gráfico como una barra
+            temperature = "${dataTemperature['value']} °C"; // Agregar unidad de medida
             temperatureData.add(BarChartGroupData(
               x: DateTime.now().millisecondsSinceEpoch,
               barRods: [
                 BarChartRodData(
-                  toY: double.tryParse(temperature) ?? 0.0,  // Convertir la temperatura a double
+                  toY: double.tryParse(dataTemperature['value']) ?? 0.0,
                   color: Colors.lightGreen,
                 ),
               ],
             ));
             if (temperatureData.length > 10) {
-              temperatureData.removeAt(0);  // Mantener solo los últimos 10 valores
+              temperatureData.removeAt(0);
             }
           });
         }
 
         if (dataHumidity != null && dataHumidity['value'] != null) {
           setState(() {
-            humidity = dataHumidity['value']; // Extraer la humedad
-            // Agregar la nueva lectura de humedad al gráfico como una barra
+            humidity = "${dataHumidity['value']} %"; // Agregar unidad de medida
             humidityData.add(BarChartGroupData(
               x: DateTime.now().millisecondsSinceEpoch,
               barRods: [
                 BarChartRodData(
-                  toY: double.tryParse(humidity) ?? 0.0,  // Convertir la humedad a double
-                  color: Colors.blueAccent,  // Diferente color para la humedad
+                  toY: double.tryParse(dataHumidity['value']) ?? 0.0,
+                  color: Colors.blueAccent,
                 ),
               ],
             ));
             if (humidityData.length > 10) {
-              humidityData.removeAt(0);  // Mantener solo los últimos 10 valores
+              humidityData.removeAt(0);
             }
           });
         }
       } else {
         setState(() {
-          temperature = "Error al cargar la temperatura. Código de estado: ${responseTemperature.statusCode}";
-          humidity = "Error al cargar la humedad. Código de estado: ${responseHumidity.statusCode}";
+          temperature = "Error al cargar la temperatura. Código: ${responseTemperature.statusCode}";
+          humidity = "Error al cargar la humedad. Código: ${responseHumidity.statusCode}";
         });
       }
     } catch (e) {
@@ -110,15 +104,13 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
         temperature = "Error de conexión al obtener la temperatura.";
         humidity = "Error de conexión al obtener la humedad.";
       });
-      print("Error al obtener los datos: $e");
     }
   }
 
   @override
   void initState() {
     super.initState();
-    fetchData(); // Llamada a la función para obtener la temperatura y humedad cuando la pantalla se carga
-    // Actualizar los datos cada 5 minutos usando Timer
+    fetchData();
     _timer = Timer.periodic(Duration(minutes: 5), (timer) {
       fetchData();
     });
@@ -126,7 +118,7 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
 
   @override
   void dispose() {
-    _timer?.cancel(); // Cancelar el Timer cuando la pantalla se destruya
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -135,89 +127,125 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Temperatura y Control de LED RGB'),
+        backgroundColor: Colors.white70,
+        elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Card para la temperatura
-                Card(
-                  elevation: 5,
-                  child: ListTile(
-                    leading: Icon(Icons.thermostat_outlined, color: Colors.lightGreen, size: 40),  // Icono de temperatura
-                    title: Text(
-                      'Temperatura actual:',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        temperature, // Mostrar la temperatura
-                        style: TextStyle(fontSize: 32, color: Colors.lightGreen),
-                      ),
-                    ),
-                    onTap: () {
-                      // Acción al presionar la card de temperatura, navegar a la pantalla del gráfico
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TemperatureGraphScreen(
-                            temperatureData: temperatureData,
-                            humidityData: humidityData,
-                            graphType: 'temperature', // Pasar tipo de gráfico
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(height: 20),
-
-                // Card para la humedad
-                Card(
-                  elevation: 5,
-                  child: ListTile(
-                    leading: Icon(Icons.water_drop_outlined, color: Colors.blueAccent, size: 40),  // Icono de humedad
-                    title: Text(
-                      'Humedad actual:',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        humidity, // Mostrar la humedad
-                        style: TextStyle(fontSize: 32, color: Colors.blueAccent),
-                      ),
-                    ),
-                    onTap: () {
-                      // Acción al presionar la card de humedad
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TemperatureGraphScreen(
-                            temperatureData: temperatureData,
-                            humidityData: humidityData,
-                            graphType: 'humidity', // Pasar tipo de gráfico
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(height: 20),
-
-                // Botón para actualizar la temperatura y humedad
-                ElevatedButton(
-                  onPressed: fetchData, // Actualizar los datos al presionar el botón
-                  child: Text('Actualizar datos'),
-                ),
-              ],
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
+          // Fondo de clima
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/sunny_bg.jpg'),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-        ),
+          // Filtro para contraste
+          Container(
+            color: Colors.black.withOpacity(0.2),
+          ),
+          // Contenido
+          SingleChildScrollView(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 100),
+                    Card(
+                      elevation: 5,
+                      color: Colors.white.withOpacity(0.65),
+                      child: ListTile(
+                        leading: Icon(Icons.thermostat_outlined, color: Colors.green, size: 40),
+                        title: Text(
+                          'Temperatura actual:',
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            temperature, // Ya tiene la unidad °C
+                            style: TextStyle(fontSize: 32, color: Colors.green),
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TemperatureGraphScreen(
+                                temperatureData: temperatureData,
+                                humidityData: humidityData,
+                                graphType: 'temperature',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Card(
+                      elevation: 5,
+                      color: Colors.white.withOpacity(0.65),
+                      child: ListTile(
+                        leading: Icon(Icons.water_drop_outlined, color: Colors.blueAccent, size: 40),
+                        title: Text(
+                          'Humedad actual:',
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            humidity, // Ya tiene la unidad %
+                            style: TextStyle(fontSize: 32, color: Colors.blueAccent),
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TemperatureGraphScreen(
+                                temperatureData: temperatureData,
+                                humidityData: humidityData,
+                                graphType: 'humidity',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(height: 50),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        backgroundColor: Colors.blueAccent,
+                        elevation: 8,
+                        shadowColor: Colors.black.withOpacity(0.3),
+                      ),
+                      onPressed: fetchData,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.refresh, color: Colors.white),
+                          SizedBox(width: 8),
+                          Text(
+                            'Actualizar datos',
+                            style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -226,9 +254,8 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
 class TemperatureGraphScreen extends StatelessWidget {
   final List<BarChartGroupData> temperatureData;
   final List<BarChartGroupData> humidityData;
-  final String graphType; // Para saber qué gráfico mostrar
+  final String graphType;
 
-  // Constructor para recibir los datos de temperatura y humedad
   TemperatureGraphScreen({
     required this.temperatureData,
     required this.humidityData,
@@ -238,49 +265,79 @@ class TemperatureGraphScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: Colors.white70,
+        elevation: 0,
         title: Text('Gráfico de ${graphType == 'temperature' ? 'Temperatura' : 'Humedad'}'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text(
-              'Gráfico de ${graphType == 'temperature' ? 'Temperatura' : 'Humedad'}',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: Stack(
+        children: [
+          // Fondo
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/sunny_bg.jpg'),
+                fit: BoxFit.cover,
+              ),
             ),
-            SizedBox(height: 20),
-            // Gráfico de barras para la temperatura
-            Container(
-              height: 300, // Definir altura para el gráfico
-              child: BarChart(
-                BarChartData(
-                  gridData: FlGridData(show: true),
-                  titlesData: FlTitlesData(
-                    show: true,
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (double value, TitleMeta meta) {
-                          // Convertir el valor (tiempo en milisegundos) a hora
-                          DateTime time = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-                          // Formato de hora: hora:minuto
-                          return Text(
-                            "${time.hour}:${time.minute.toString().padLeft(2, '0')}",
-                            style: TextStyle(fontSize: 10),
-                          );
-                        },
-                        reservedSize: 30, // Esto es el espacio reservado para los títulos
+          ),
+          // Filtro
+          Container(
+            color: Colors.black.withOpacity(0.2),
+          ),
+          // Contenido
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                SizedBox(height: 80),
+                Text(
+                  'Gráfico de ${graphType == 'temperature' ? 'Temperatura' : 'Humedad'}',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Container(
+                  height: 300,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: BarChart(
+                      BarChartData(
+                        gridData: FlGridData(show: true),
+                        titlesData: FlTitlesData(
+                          show: true,
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              getTitlesWidget: (double value, TitleMeta meta) {
+                                DateTime time = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+                                return Text(
+                                  "${time.hour}:${time.minute.toString().padLeft(2, '0')}",
+                                  style: TextStyle(fontSize: 10),
+                                );
+                              },
+                              reservedSize: 30,
+                            ),
+                          ),
+                        ),
+                        borderData: FlBorderData(show: true),
+                        barGroups: graphType == 'temperature' ? temperatureData : humidityData,
                       ),
                     ),
                   ),
-                  borderData: FlBorderData(show: true),
-                  barGroups: graphType == 'temperature' ? temperatureData : humidityData, // Mostrar solo el gráfico correspondiente
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
